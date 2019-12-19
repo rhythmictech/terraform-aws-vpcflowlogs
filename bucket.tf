@@ -3,7 +3,7 @@
 resource "aws_s3_bucket" "vpcflowlog_bucket" {
   bucket    = "${local.account_id}-${var.region}-vpcflowlog"
   acl       = "private"
-  tags      = merge(local.common_tags, var.additional_tags)
+  tags      = var.tags
 
   versioning {
     enabled = true

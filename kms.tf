@@ -54,8 +54,7 @@ resource "aws_kms_key" "vpcflowlog_key" {
     {
       "Name" = "vpcflowlog-key"
     },
-    local.common_tags,
-    var.additional_tags,
+    var.tags
   )
 }
 
