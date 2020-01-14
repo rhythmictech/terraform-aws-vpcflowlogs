@@ -5,20 +5,23 @@ locals {
   account_id = data.aws_caller_identity.current.account_id
 }
 
-variable "tags" {
-  default = {}
-  type    = map(string)
+variable "logging_bucket" {
+  description = "S3 bucket to send request logs to the VPC flow log bucket to"
+  type        = string
 }
 
 variable "region" {
-  type = string
+  description = "Region VPC flow logs will be sent to"
+  type        = string
 }
 
-variable "logging_bucket" {
-  type = string
+variable "tags" {
+  default     = {}
+  description = "Tags to include on resources that support it"
+  type        = map(string)
 }
 
 variable "vpc_ids" {
-  type = list(string)
+  description = "List of VPCs to enable flow logging for"
+  type        = list(string)
 }
-

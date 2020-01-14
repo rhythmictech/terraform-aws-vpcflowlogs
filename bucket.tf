@@ -1,9 +1,9 @@
 
 
 resource "aws_s3_bucket" "vpcflowlog_bucket" {
-  bucket    = "${local.account_id}-${var.region}-vpcflowlog"
-  acl       = "private"
-  tags      = var.tags
+  bucket = "${local.account_id}-${var.region}-vpcflowlog"
+  acl    = "private"
+  tags   = var.tags
 
   versioning {
     enabled = true
