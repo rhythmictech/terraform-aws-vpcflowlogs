@@ -1,17 +1,10 @@
 
 
-resource "aws_s3_bucket" "vpcflowlog_bucket" {
+resource "aws_s3_bucket" "this" {
+  count  = var.create_bucket ? 1 : 0
   bucket = "${local.account_id}-${var.region}-vpcflowlog"
   acl    = "private"
   tags   = var.tags
-
-  versioning {
-    enabled = true
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
 
   lifecycle_rule {
     enabled = true
@@ -21,30 +14,34 @@ resource "aws_s3_bucket" "vpcflowlog_bucket" {
       storage_class = "STANDARD_IA"
     }
 
-    transition {
-      days          = 365
-      storage_class = "GLACIER"
-    }
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm     = "aws:kms"
-        kms_master_key_id = aws_kms_key.vpcflowlog_key.arn
-      }
-    }
   }
 
   logging {
     target_bucket = var.logging_bucket
     target_prefix = "${local.account_id}-${var.region}-vpcflowlog/"
   }
+
+  server_side_encryption_configuration {
+    rule {
+      apply_server_side_encryption_by_default {
+        sse_algorithm     = "aws:kms"
+        kms_master_key_id = aws_kms_key.this[0].arn
+      }
+    }
+  }
+
+  versioning {
+    enabled = true
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
-resource "aws_s3_bucket_public_access_block" "block_public_access" {
-  bucket = aws_s3_bucket.vpcflowlog_bucket.id
-
+resource "aws_s3_bucket_public_access_block" "this" {
+  count                   = var.create_bucket ? 1 : 0
+  bucket                  = aws_s3_bucket.this[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -52,7 +49,8 @@ resource "aws_s3_bucket_public_access_block" "block_public_access" {
 }
 
 resource "aws_s3_bucket_policy" "vpcflowlog_bucket_policy" {
-  bucket = aws_s3_bucket.vpcflowlog_bucket.id
+  count  = var.create_bucket ? 1 : 0
+  bucket = aws_s3_bucket.this[0].id
 
   policy = <<EOF
 {
@@ -62,13 +60,13 @@ resource "aws_s3_bucket_policy" "vpcflowlog_bucket_policy" {
       "Effect": "Allow",
       "Principal": { "Service": "delivery.logs.amazonaws.com" },
       "Action": "s3:GetBucketAcl",
-      "Resource": "${aws_s3_bucket.vpcflowlog_bucket.arn}"
+      "Resource": "${aws_s3_bucket.this[0].arn}"
     },
     {
       "Effect": "Allow",
       "Principal": { "Service": "delivery.logs.amazonaws.com" },
       "Action": "s3:PutObject",
-      "Resource": "${aws_s3_bucket.vpcflowlog_bucket.arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
+      "Resource": "${aws_s3_bucket.this[0].arn}/AWSLogs/${data.aws_caller_identity.current.account_id}/*",
       "Condition": { "StringEquals": { "s3:x-amz-acl": "bucket-owner-full-control" } }
     }
   ]
