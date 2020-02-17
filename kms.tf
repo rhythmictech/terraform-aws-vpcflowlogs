@@ -1,4 +1,4 @@
-data "aws_iam_policy_document" "vpcflowlog_kms_policy" {
+data "aws_iam_policy_document" "key" {
 
   statement {
     effect    = "Allow"
@@ -45,11 +45,12 @@ data "aws_iam_policy_document" "vpcflowlog_kms_policy" {
   }
 }
 
-resource "aws_kms_key" "vpcflowlog_key" {
+resource "aws_kms_key" "this" {
+  count                   = var.create_kms_key ? 1 : 0
   deletion_window_in_days = 7
   description             = "VPC Flow Log Encryption Key"
   enable_key_rotation     = true
-  policy                  = data.aws_iam_policy_document.vpcflowlog_kms_policy.json
+  policy                  = data.aws_iam_policy_document.key.json
   tags = merge(
     {
       "Name" = "vpcflowlog-key"
@@ -58,7 +59,8 @@ resource "aws_kms_key" "vpcflowlog_key" {
   )
 }
 
-resource "aws_kms_alias" "vpcflowlog_key" {
-  name          = "alias/vpcflowlog_key"
-  target_key_id = aws_kms_key.vpcflowlog_key.id
+resource "aws_kms_alias" "this" {
+  count         = var.create_kms_key ? 1 : 0
+  name          = "alias/${var.kms_alias}"
+  target_key_id = aws_kms_key.this[0].id
 }
