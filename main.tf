@@ -52,7 +52,7 @@ resource "aws_iam_role_policy_attachment" "vpcflowlog-attach-localconfig-policy"
 resource "aws_flow_log" "cloudwatch" {
   count           = var.log_to_cloudwatch ? length(var.vpc_ids) : 0
   iam_role_arn    = aws_iam_role.this.arn
-  log_destination = aws_cloudwatch_log_group.this[count.index].arn
+  log_destination = aws_cloudwatch_log_group.this[0].arn
   traffic_type    = "ALL"
   vpc_id          = var.vpc_ids[count.index]
 }
