@@ -1,5 +1,5 @@
 locals {
-  bucket     = var.create_bucket ? aws_s3_bucket.this[0].arn : var.vpcflowlog_bucket
+  bucket     = var.create_bucket ? aws_s3_bucket.this[0].name : var.vpcflowlog_bucket
   kms_key_id = var.create_kms_key ? aws_kms_key.this[0].arn : var.vpcflowlog_kms_key
 }
 
