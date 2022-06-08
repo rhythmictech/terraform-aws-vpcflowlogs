@@ -1,6 +1,10 @@
+data "aws_partition" "current" {
+}
+
 locals {
   bucket     = var.create_bucket ? aws_s3_bucket.this[0].id : var.vpcflowlog_bucket
   kms_key_id = var.create_kms_key ? aws_kms_key.this[0].arn : var.vpcflowlog_kms_key
+  partition  = data.aws_partition.current.partition
 }
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -59,7 +63,7 @@ resource "aws_flow_log" "cloudwatch" {
 
 resource "aws_flow_log" "s3" {
   count                = var.log_to_s3 ? length(var.vpc_ids) : 0
-  log_destination      = "arn:aws:s3:::${local.bucket}"
+  log_destination      = "arn:${local.partition}:s3:::${local.bucket}"
   log_destination_type = "s3"
   traffic_type         = "ALL"
   vpc_id               = var.vpc_ids[count.index]
